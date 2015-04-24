@@ -27,19 +27,6 @@ TEST_F(CTest, std_sort)
     EXPECT_TRUE(std::equal(testArr.begin(), testArr.end(), deque.begin()));
 }
 
-TEST_F(CTest, pop_front)
-{
-    for(std::size_t i = 0; i < testArr.size(); ++i)
-    {
-        EXPECT_FALSE(deque.empty());
-        EXPECT_EQ(deque.at(0), testArr.at(i));
-        EXPECT_EQ(deque.size(), testArr.size() - i);
-        EXPECT_NO_THROW(deque.pop_front());
-    }
-    EXPECT_EQ(deque.size(), 0);
-    EXPECT_TRUE(deque.empty());
-}
-
 TEST_F(CTest, pop_back)
 {
     while(!testArr.empty())
@@ -49,6 +36,19 @@ TEST_F(CTest, pop_back)
         EXPECT_NO_THROW(deque.pop_back());
         testArr.pop_back();
         EXPECT_EQ(deque.size(), testArr.size());
+    }
+    EXPECT_EQ(deque.size(), 0);
+    EXPECT_TRUE(deque.empty());
+}
+
+TEST_F(CTest, pop_front)
+{
+    for(std::size_t i = 0; i < testArr.size(); ++i)
+    {
+        EXPECT_FALSE(deque.empty());
+        EXPECT_EQ(deque.at(0), testArr.at(i));
+        EXPECT_EQ(deque.size(), testArr.size() - i);
+        EXPECT_NO_THROW(deque.pop_front());
     }
     EXPECT_EQ(deque.size(), 0);
     EXPECT_TRUE(deque.empty());
@@ -75,50 +75,58 @@ TEST(Test, push_front)
 
 TEST(Test, amortized_working_time)
 {
+    std::srand(std::time(NULL));
+
     std::deque<int> testDeque;
     CDeque<int> deque;
 
     for(int i = 0; i < REPETITIONS; ++i)
     {
         std::clock_t time = std::clock();
-        for(int c = 0; c < COMMANDS; ++c)
+        for(int j = 0; j < COMMANDS; ++j)
         {
-            int command = rand() % 4;
-            switch(command)
+            switch(rand() % 4)
             {
                 case 0:                              //push_back
                 {
-                    int num = rand() % 100;
+                    int num = rand();
                     deque.push_back(num);
                     testDeque.push_back(num);
                     break;
                 }
                 case 1:                              //push_front
                 {
-                    int num = rand() % 100;
+                    int num = rand();
                     deque.push_front(num);
                     testDeque.push_front(num);
                     break;
                 }
                 case 2:                              //pop_back
                 {
-                    if(testDeque.size() == 0)
+                    if(testDeque.empty())
                         break;
                     testDeque.pop_back();
                     deque.pop_back();
+
+                    //EXPECT_TRUE(std::equal(testDeque.begin(), testDeque.end(), deque.begin()));
                     break;
                 }
                 case 3:                              //pop_front
                 {
-                    if(testDeque.size() == 0)
+                    if(testDeque.empty())
                         break;
                     testDeque.pop_front();
                     deque.pop_front();
+
+                    //EXPECT_TRUE(std::equal(testDeque.begin(), testDeque.end(), deque.begin()));
                     break;
                 }
             }
         }
-        EXPECT_TRUE(std::equal(testDeque.begin(), testDeque.end(), deque.begin()));
-        std::cout << (std::clock() - time) / CLOCKS_PER_SEC << std::endl;
+        std::cout << std::fixed << std::setprecision(3) << (double)(std::clock() - time) / (double)CLOCKS_PER_SEC << std::endl;
+
+//        CDeque<int>::CDequeIterator dqIter = deque.begin();
+//        for(std::deque<int>::iterator iter = testDeque.begin(); iter != testDeque.end(); ++iter, ++dqIter)
+//            EXPECT_EQ(*iter, *dqIter);
     }
 }
