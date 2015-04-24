@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <assert.h>
+#include <vector>
 
 template<class T>
 class CDeque
@@ -42,68 +43,59 @@ public:
             dqiter_end = end;
             dqiter_size = size;
             dqiter_capacity = capacity;
-            dqiter_index = index;
-            if(dqiter_index >= dqiter_capacity)
-                dqiter_index -= dqiter_capacity;
+            dqiter_index = index % dqiter_capacity;
         }
 
         CDequeIterator friend operator +(const int count, const CDequeIterator iter)
         {
             CDequeIterator result = iter;
-            result.dqiter_index += count;
-            if(result.dqiter_index >= result.dqiter_capacity)
-                result.dqiter_index -= result.dqiter_capacity;
+            result.dqiter_index = (result.dqiter_index + count) % result.dqiter_capacity;
 
             return result;
         }
         CDequeIterator operator +(const int count)
         {
             CDequeIterator result = *this;
-            result.dqiter_index += count;
-            if(result.dqiter_index >= dqiter_capacity)
-                result.dqiter_index -= dqiter_capacity;
+            result.dqiter_index = (result.dqiter_index + count) % dqiter_capacity;
 
             return result;
         }
-        CDequeIterator operator -(const int count)
+        CDequeIterator operator -(const int count) //TODO: clean
         {
             CDequeIterator result = *this;
-            int residual = result.dqiter_index - count;
-            result.dqiter_index = 0;
+            result.dqiter_index = (result.dqiter_index - count) % result.dqiter_capacity;
+//            int residual = result.dqiter_index - count;
+//            result.dqiter_index = 0;
 
-            if(residual >= 0)
-                result.dqiter_index = residual;
+//            if(residual >= 0)
+//                result.dqiter_index = residual;
 
-            if(dqiter_begin != 0)
-                if(residual < 0)
-                    result.dqiter_index = dqiter_capacity + residual;
+//            if(dqiter_begin != 0)
+//                if(residual < 0)
+//                    result.dqiter_index = dqiter_capacity + residual;
 
             return result;
         }
         void operator +=(const int count)
         {
-            dqiter_index += count;
-            if(dqiter_index >= dqiter_capacity)
-                dqiter_index -= dqiter_capacity;
+            dqiter_index = (dqiter_index + count) % dqiter_capacity;
         }
-        void operator -=(const int count)
+        void operator -=(const int count) //TODO: clean
         {
-            int residual = dqiter_index - count;
-            dqiter_index = 0;
+            dqiter_index = (dqiter_index - count) % dqiter_capacity;
+//            int residual = dqiter_index - count;
+//            dqiter_index = 0;
 
-            if(residual >= 0)
-                dqiter_index = residual;
+//            if(residual >= 0)
+//                dqiter_index = residual;
 
-            if(dq_begin != 0)
-                if(residual < 0)
-                    dqiter_index = dqiter_capacity + residual;
+//            if(dq_begin != 0)
+//                if(residual < 0)
+//                    dqiter_index = dqiter_capacity + residual;
         }
         T& operator [](const int n)
         {
-            std::size_t resultIndex = dqiter_index + n;
-            if(resultIndex >= dqiter_capacity)
-                resultIndex -= dqiter_capacity;
-
+            std::size_t resultIndex = (dqiter_index + n) % dqiter_capacity;
             return dqiter_data[resultIndex];
         }
         T& operator *()
@@ -112,48 +104,24 @@ public:
         }
         CDequeIterator& operator ++()
         {
-            ++dqiter_index;
-            if(dqiter_index >= dqiter_capacity)
-                dqiter_index -= dqiter_capacity;
-
+            dqiter_index = (dqiter_index + 1) % dqiter_capacity;
             return *this;
         }
         const CDequeIterator operator ++(int)
         {
             CDequeIterator resultIter = *this;
-            ++resultIter.dqiter_index;
-            if(resultIter.dqiter_index >= dqiter_capacity)
-                resultIter.dqiter_index -= dqiter_capacity;
-
+            resultIter.dqiter_index = (resultIter.dqiter_index + 1) % dqiter_capacity;
             return resultIter;
         }
         CDequeIterator& operator --()
         {
-            int residual = dqiter_index - 1;
-            dqiter_index = 0;
-
-            if(residual >= 0)
-                dqiter_index = residual;
-
-            if(dqiter_begin != 0)
-                if(residual < 0)
-                    dqiter_index = dqiter_capacity + residual;
-
+            dqiter_index = (dqiter_index - 1) % dqiter_capacity;
             return *this;
         }
         const CDequeIterator operator --(int)
         {
             CDequeIterator resultIter = *this;
-            int residual = resultIter.dqiter_index - 1;
-            resultIter.dqiter_index = 0;
-
-            if(residual >= 0)
-                resultIter.dqiter_index = residual;
-
-            if(resultIter.dqiter_begin != 0)
-                if(residual < 0)
-                    resultIter.dqiter_index = resultIter.dqiter_capacity + residual;
-
+            resultIter.dqiter_index = (resultIter.dqiter_index - 1) % dqiter_capacity;
             return resultIter;
         }
         int operator -(const CDequeIterator iter)
@@ -311,8 +279,8 @@ CDeque<T>::CDeque(const CDeque& deque)
 template<class T>
 CDeque<T>::CDeque()
 {
-    dq_data = new T[1];
-    dq_capacity = 1;
+    dq_data = new T[2];
+    dq_capacity = 2;
     dq_size = 0;
     dq_begin = 0;
     dq_end = 0;
@@ -345,50 +313,41 @@ template<class T>
 void CDeque<T>::Realloc(const std::size_t size)
 {
     T* tempDeque = new T[size];
-    std::size_t j = 0;
 
-    if(dq_begin != 0)
-        for(std::size_t i = dq_begin; i < dq_capacity; ++i, ++j)
-            tempDeque[j] = dq_data[i];
-
-    for(std::size_t i = 0; i < dq_end; ++i, ++j)
-        tempDeque[j] = dq_data[i];
+    for(std::size_t i = dq_begin, tmpPos = 0; i != dq_end ; i = (i + 1) % dq_capacity, ++tmpPos)
+        tempDeque[tmpPos] = dq_data[i];
 
     delete [] dq_data;
 
+    dq_data = tempDeque;
+
     dq_capacity = size;
-    dq_data = new T[size];
     dq_begin = 0;
     dq_end = dq_size;
-
-    for(std::size_t i = 0; i < dq_size; ++i)
-        dq_data[i] = tempDeque[i];
-    delete [] tempDeque;
 }
 
 template<class T>
 void CDeque<T>::push_back(const T& value)
 {
-    if((dq_size == dq_capacity || dq_end == dq_begin) && dq_size != 0)
+    if((dq_size + 1) == dq_capacity && dq_size != 0)
         Realloc(dq_capacity * 2);
 
     dq_data[dq_end] = value;
-
     ++dq_size;
-    ++dq_end;
+    dq_end = (dq_end + 1) % dq_capacity;
 }
+
+/*
+ *BUG #1: problem with Realloc() in some cases
+ */
 
 template<class T>
 void CDeque<T>::push_front(const T& value)
 {
-    if(dq_begin == dq_end || dq_size == dq_capacity)
+    if((dq_size + 1) == dq_capacity && dq_size != 0)
         Realloc(dq_capacity * 2);
 
-    if(dq_begin == 0)
-        dq_begin = dq_capacity - 1;
-    else
-        --dq_begin;
-
+    dq_begin = (dq_begin - 1) % dq_capacity;
     dq_data[dq_begin] = value;
     ++dq_size;
 }
@@ -396,32 +355,28 @@ void CDeque<T>::push_front(const T& value)
 template<class T>
 void CDeque<T>::pop_back()
 {
-    assert(dq_size != 0);
-
-    --dq_size;
-    --dq_end;
-
-    dq_data[dq_end] = NULL;
+    if(dq_size <= 0)
+        return;
 
     if(4 * dq_size <= dq_capacity)
         Realloc(dq_capacity / 2);
+
+    --dq_size;
+    dq_end = (dq_end - 1) % dq_capacity;
 }
 
 template<class T>
 void CDeque<T>::pop_front()
 {
-    assert(dq_size > 0);
+    if(dq_size <= 0)
+        return;
 
-    dq_data[dq_begin] = NULL;
-
-    if(dq_begin == dq_capacity - 1)
-        dq_begin = 0;
-    else
-        ++dq_begin;
-    --dq_size;
+    dq_begin = (dq_begin + 1) % dq_capacity;
 
     if(4 * dq_size <= dq_capacity)
         Realloc(dq_capacity / 2);
+
+    --dq_size;
 }
 
 template<class T>
@@ -448,22 +403,19 @@ typename CDeque<T>::CDequeIterator& CDeque<T>::cbegin() const
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator>& CDeque<T>::rbegin() const
 {
-    const CDeque<T>::CDequeIterator beginIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_begin);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(beginIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(end());
 }
 
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator> CDeque<T>::rbegin()
 {
-    CDeque<T>::CDequeIterator beginIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_begin);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(beginIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(end());
 }
 
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator>& CDeque<T>::crbegin() const
 {
-    const CDeque<T>::CDequeIterator beginIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_begin);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(beginIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(cend());
 }
 
 template<class T>
@@ -490,22 +442,19 @@ typename CDeque<T>::CDequeIterator& CDeque<T>::cend() const
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator> CDeque<T>::rend()
 {
-    CDeque<T>::CDequeIterator endIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_end);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(endIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(begin());
 }
 
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator>& CDeque<T>::rend() const
 {
-    const CDeque<T>::CDequeIterator endIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_end);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(endIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(begin());
 }
 
 template<class T>
 std::reverse_iterator<typename CDeque<T>::CDequeIterator>& CDeque<T>::crend() const
 {
-    const CDeque<T>::CDequeIterator endIter(dq_data, dq_begin, dq_end, dq_size, dq_capacity, dq_end);
-    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(endIter);
+    return std::reverse_iterator<typename CDeque<T>::CDequeIterator>(cbegin());
 }
 
 template<class T>
