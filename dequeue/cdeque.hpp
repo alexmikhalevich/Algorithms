@@ -60,38 +60,19 @@ public:
 
             return result;
         }
-        CDequeIterator operator -(const int count) //TODO: clean
+        CDequeIterator operator -(const int count)
         {
             CDequeIterator result = *this;
             result.dqiter_index = (result.dqiter_index - count) % result.dqiter_capacity;
-//            int residual = result.dqiter_index - count;
-//            result.dqiter_index = 0;
-
-//            if(residual >= 0)
-//                result.dqiter_index = residual;
-
-//            if(dqiter_begin != 0)
-//                if(residual < 0)
-//                    result.dqiter_index = dqiter_capacity + residual;
-
             return result;
         }
         void operator +=(const int count)
         {
             dqiter_index = (dqiter_index + count) % dqiter_capacity;
         }
-        void operator -=(const int count) //TODO: clean
+        void operator -=(const int count)
         {
             dqiter_index = (dqiter_index - count) % dqiter_capacity;
-//            int residual = dqiter_index - count;
-//            dqiter_index = 0;
-
-//            if(residual >= 0)
-//                dqiter_index = residual;
-
-//            if(dq_begin != 0)
-//                if(residual < 0)
-//                    dqiter_index = dqiter_capacity + residual;
         }
         T& operator [](const int n)
         {
@@ -336,10 +317,6 @@ void CDeque<T>::push_back(const T& value)
     ++dq_size;
     dq_end = (dq_end + 1) % dq_capacity;
 }
-
-/*
- *BUG #1: problem with Realloc() in some cases
- */
 
 template<class T>
 void CDeque<T>::push_front(const T& value)
