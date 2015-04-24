@@ -107,8 +107,6 @@ TEST(Test, amortized_working_time)
                         break;
                     testDeque.pop_back();
                     deque.pop_back();
-
-                    //EXPECT_TRUE(std::equal(testDeque.begin(), testDeque.end(), deque.begin()));
                     break;
                 }
                 case 3:                              //pop_front
@@ -117,16 +115,10 @@ TEST(Test, amortized_working_time)
                         break;
                     testDeque.pop_front();
                     deque.pop_front();
-
-                    //EXPECT_TRUE(std::equal(testDeque.begin(), testDeque.end(), deque.begin()));
                     break;
                 }
             }
         }
         std::cout << std::fixed << std::setprecision(3) << (double)(std::clock() - time) / (double)CLOCKS_PER_SEC << std::endl;
-
-//        CDeque<int>::CDequeIterator dqIter = deque.begin();
-//        for(std::deque<int>::iterator iter = testDeque.begin(); iter != testDeque.end(); ++iter, ++dqIter)
-//            EXPECT_EQ(*iter, *dqIter);
     }
 }
