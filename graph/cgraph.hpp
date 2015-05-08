@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <assert.h>
 
 /*
@@ -26,7 +27,7 @@ public:
     class Edge;
     CGraph() : g_rootVertice(NULL) {}
     void init();
-    unsigned int dijkstra(const V& source, const V& destination /*TODO: add path length function*/);
+    unsigned int dijkstra(const V& source, const V& destination /*TODO: add path length function, see timsort CCompare*/);
     CGraph<V>::Edge* get_edge(const V& sourceId, const V& destId) const;
     unsigned int get_edge_weight(const V& sourceId, const V& destId) const;
 private:
@@ -41,9 +42,12 @@ private:
     V v_id;
     unsigned int v_shortestPath;
     CGraph<V>::Vertice* v_sibling;
+    CGraph<V>::Vertice* v_bestParent;
     std::vector<CGraph<V>::Edge*> v_edges;
+    bool v_isVisited;
 public:
-    Vertice(V id) : v_id(id), v_sibling(NULL) {}
+    Vertice(V id) : v_id(id), v_shortestPath(std::numeric_limits<unsigned int>::max()),
+        v_sibling(NULL), v_bestParent(NULL), v_isVisited(false) {}
     friend class CGraph;
 };
 
@@ -125,7 +129,45 @@ void CGraph<V>::init() //O(VE)
 template<class V>
 unsigned int CGraph<V>::dijkstra(const V& source, const V& destination)
 {
+    CGraph<V>::Vertice* vertice = g_rootVertice;
+    while(vertice)
+    {
+        if(vertice->v_id == source)
+            break;
+        vertice = vertice->v_sibling;
+    }
+    assert(vertice != NULL);
 
+    vertice->v_shortestPath = 0;
+    while(vertice)
+    {
+        vertice->isVisited = true;
+        if(vertice->v_id == destination)
+            return vertice->v_shortestPath;
+
+        for(auto i : vertice->v_edges)
+        {
+            vertice->v_edges.at(i)->e_destination->v_shortestPath =
+                    std::min(vertice->v_edges.at(i)->e_destination->v_shortestPath,
+                             vertice->v_shortestPath + vertice->v_edges.at(i)->e_weight);
+        }
+
+        CGraph<V>::Vertice* tempVert = g_rootVertice;
+        unsigned int minPath = std::numeric_limits<unsigned int>::max();
+        while(tempVert)
+        {
+            if(tempVert->v_shortestPath < minPath && !tempVert->v_isVisited)
+            {
+                vertice = tempVert;
+                minPath = tempVert->v_shortestPath;
+            }
+            tempVert = tempVert->v_sibling;
+        }
+        if(!tempVert)
+            vertice = NULL;
+    }
+
+    return 0;
 }
 
 template<class V>
