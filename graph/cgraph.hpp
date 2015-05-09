@@ -7,11 +7,6 @@
 #include <assert.h>
 
 /*
- *TODO
- *see boost/graph methods complexity
- */
-
-/*
  *V - the amount of vertices
  *E - the amount of edges
  *
@@ -19,7 +14,7 @@
  *O(V+E)
  */
 
-template<class V>
+template<class V, class PathFunction>
 class CGraph
 {
 public:
@@ -27,46 +22,47 @@ public:
     class Edge;
     CGraph() : g_rootVertice(NULL) {}
     void init();
-    unsigned int dijkstra(const V& source, const V& destination /*TODO: add path length function, see timsort CCompare*/);
-    CGraph<V>::Edge* get_edge(const V& sourceId, const V& destId) const;
+    unsigned int dijkstra(const V& source, const V& destination, PathFunction pathFunc);
+    std::vector<V, PathFunction> get_path() const;
+    CGraph<V, PathFunction>::Edge* get_edge(const V& sourceId, const V& destId) const;
     unsigned int get_edge_weight(const V& sourceId, const V& destId) const;
 private:
-    CGraph<V>::Vertice* g_rootVertice;
+    CGraph<V, PathFunction>::Vertice* g_rootVertice;
+    std::vector<CGraph<V, PathFunction>::Edge*> g_path;
 };
 
-template<class V>
-class CGraph<V>::Vertice
+template<class V, class PathFunction>
+class CGraph<V, PathFunction>::Vertice
 {
 private:
     Vertice();
     V v_id;
     unsigned int v_shortestPath;
-    CGraph<V>::Vertice* v_sibling;
-    CGraph<V>::Vertice* v_bestParent;
-    std::vector<CGraph<V>::Edge*> v_edges;
+    CGraph<V, PathFunction>::Vertice* v_sibling;
+    std::vector<CGraph<V, PathFunction>::Edge*> v_edges;
     bool v_isVisited;
 public:
     Vertice(V id) : v_id(id), v_shortestPath(std::numeric_limits<unsigned int>::max()),
-        v_sibling(NULL), v_bestParent(NULL), v_isVisited(false) {}
+        v_sibling(NULL), v_isVisited(false) {}
     friend class CGraph;
 };
 
-template<class V>
-class CGraph<V>::Edge
+template<class V, class PathFunction>
+class CGraph<V, PathFunction>::Edge
 {
 private:
     Edge();
     unsigned int e_weight;
-    CGraph<V>::Vertice* e_source;
-    CGraph<V>::Vertice* e_destination;
+    CGraph<V, PathFunction>::Vertice* e_source;
+    CGraph<V, PathFunction>::Vertice* e_destination;
 public:
-    Edge(const int weight, CGraph<V>::Vertice* source, CGraph<V>::Vertice* destination) :
+    Edge(const int weight, CGraph<V, PathFunction>::Vertice* source, CGraph<V, PathFunction>::Vertice* destination) :
         e_weight(weight), e_source(source), e_destination(destination) {}
     friend class CGraph;
 };
 
-template<class V>
-void CGraph<V>::init() //O(VE)
+template<class V, class PathFunction>
+void CGraph<V, PathFunction>::init() //O(VE)
 {
     int numOfVertices = 0;
     std::cout << "Enter the amount of vertices: ";
@@ -75,15 +71,15 @@ void CGraph<V>::init() //O(VE)
     V firstId;
     std::cout << "Enter id for the vertice " << 1 << ": ";
     std::cin >> firstId;
-    g_rootVertice = new CGraph<V>::Vertice(firstId);
+    g_rootVertice = new CGraph<V, PathFunction>::Vertice(firstId);
 
-    CGraph<V>::Vertice* lastVertice = g_rootVertice; //NOTE 1: possible bug here if lastVertice and g_rootVertice point to different objects
+    CGraph<V, PathFunction>::Vertice* lastVertice = g_rootVertice; //NOTE 1: possible bug here if lastVertice and g_rootVertice point to different objects
     for(int i = 1; i < numOfVertices; ++i)
     {
         V id;
         std::cout << "Enter id for the vertice " << i + 1 << ": ";
         std::cin >> id;
-        CGraph<V>::Vertice* vertice = new CGraph<V>::Vertice(id);
+        CGraph<V, PathFunction>::Vertice* vertice = new CGraph<V, PathFunction>::Vertice(id);
         lastVertice->v_sibling = vertice;                           //see note 1
     }
 
@@ -92,9 +88,9 @@ void CGraph<V>::init() //O(VE)
     std::cin >> numOfEdges;
     for(int i = 0; i < numOfEdges; ++i)
     {
-        CGraph<V>::Vertice* vert = g_rootVertice;
-        CGraph<V>::Vertice* source = NULL;
-        CGraph<V>::Vertice* destination = NULL;
+        CGraph<V, PathFunction>::Vertice* vert = g_rootVertice;
+        CGraph<V, PathFunction>::Vertice* source = NULL;
+        CGraph<V, PathFunction>::Vertice* destination = NULL;
         V id_from, id_dest;
         unsigned int weight;
         std::cout << "Enter id 's of the source/destination vertices and the edge weight: ";
@@ -119,17 +115,19 @@ void CGraph<V>::init() //O(VE)
         assert(source != NULL);
         assert(destination != NULL);
 
-        typename CGraph<V>::Edge* edge = new CGraph<V>::Edge(weight, source, destination);
+        typename CGraph<V, PathFunction>::Edge* edge = new CGraph<V, PathFunction>::Edge(weight, source, destination);
         source->v_edges.push_back(edge);
         source = NULL;
         destination = NULL;
     }
 }
 
-template<class V>
-unsigned int CGraph<V>::dijkstra(const V& source, const V& destination)
+template<class V, class PathFunction> //TODO: add path function supporting
+unsigned int CGraph<V, PathFunction>::dijkstra(const V& source, const V& destination, PathFunction pathFunc) //TODO: complexity
 {
-    CGraph<V>::Vertice* vertice = g_rootVertice;
+    g_path.clear();
+
+    CGraph<V, PathFunction>::Vertice* vertice = g_rootVertice;
     while(vertice)
     {
         if(vertice->v_id == source)
@@ -142,6 +140,8 @@ unsigned int CGraph<V>::dijkstra(const V& source, const V& destination)
     while(vertice)
     {
         vertice->isVisited = true;
+        g_path.push_back(vertice->v_id);
+
         if(vertice->v_id == destination)
             return vertice->v_shortestPath;
 
@@ -152,7 +152,7 @@ unsigned int CGraph<V>::dijkstra(const V& source, const V& destination)
                              vertice->v_shortestPath + vertice->v_edges.at(i)->e_weight);
         }
 
-        CGraph<V>::Vertice* tempVert = g_rootVertice;
+        CGraph<V, PathFunction>::Vertice* tempVert = g_rootVertice;
         unsigned int minPath = std::numeric_limits<unsigned int>::max();
         while(tempVert)
         {
@@ -163,17 +163,16 @@ unsigned int CGraph<V>::dijkstra(const V& source, const V& destination)
             }
             tempVert = tempVert->v_sibling;
         }
-        if(!tempVert)
-            vertice = NULL;
+        vertice = tempVert;
     }
 
     return 0;
 }
 
-template<class V>
-typename CGraph<V>::Edge* CGraph<V>::get_edge(const V& sourceId, const V& destId) const //O(V+E)
+template<class V, class PathFunction>
+typename CGraph<V, PathFunction>::Edge* CGraph<V, PathFunction>::get_edge(const V& sourceId, const V& destId) const //O(V+E)
 {
-    CGraph<V>::Vertice* vert = g_rootVertice;
+    CGraph<V, PathFunction>::Vertice* vert = g_rootVertice;
     while(vert)
     {
         if(vert->v_id == sourceId)
@@ -186,11 +185,17 @@ typename CGraph<V>::Edge* CGraph<V>::get_edge(const V& sourceId, const V& destId
         return NULL;
 }
 
-template<class V>
-unsigned int CGraph<V>::get_edge_weight(const V& sourceId, const V& destId) const //O(V+E)
+template<class V, class PathFunction>
+unsigned int CGraph<V, PathFunction>::get_edge_weight(const V& sourceId, const V& destId) const //O(V+E)
 {
-    CGraph<V>::Edge* edge = get_edge(sourceId, destId);
+    CGraph<V, PathFunction>::Edge* edge = get_edge(sourceId, destId);
     return edge->e_weight();
+}
+
+template<class V, class PathFunction>
+std::vector<V, PathFunction> CGraph<V, PathFunction>::get_path() const
+{
+    return g_path;
 }
 
 
