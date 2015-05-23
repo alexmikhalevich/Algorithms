@@ -64,11 +64,6 @@ CVertice::CVertice()
 template<class Edge, class Path, class GetEdgesFunction>
 bool CPathFinder::compare_vertices(CVertice<Path>* firstVertice, CVertice<Path>* secondVertice)
 {
-    if(!(firstVertice->v_best_path < secondVertice->v_best_path || secondVertice->v_best_path < firstVertice->v_best_path)) //TODO: if equal
-    {
-
-    }
-
     return firstVertice->v_best_path < secondVertice->v_best_path;
 }
 
