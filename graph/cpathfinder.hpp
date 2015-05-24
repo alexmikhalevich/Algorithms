@@ -3,6 +3,8 @@
 #include <queue>
 #include <algorithm>
 
+//TODO: destructors
+
 enum EVerticeState
 {
     NOT_VISITED,
@@ -12,8 +14,6 @@ enum EVerticeState
 
 class CExNoPath
 {
-public:
-    virtual void print_error() = 0;
 };
 
 template<class Path>
@@ -23,10 +23,16 @@ private:
     int v_id;
     Path* v_best_path;
     EVerticeState v_state;
-    CVertice* v_sibling;
+    CVertice<Path>* v_sibling;
 public:
     CVertice(const int id) : v_id(id), v_best_path(NULL), v_state(NOT_VISITED), v_sibling(NULL) {}
     int get_id() const;
+    EVerticeState get_state() const;
+    CVertice<Path>* get_sibling() const;
+    Path* get_best_path() const;
+    void set_state(EVerticeState state);
+    void set_best_path(Path* path);
+    void set_sibling(CVertice<Path>* sibling);
 };
 
 template<class Path>
@@ -43,7 +49,7 @@ public:
     CVertice<Path>* get_destination() const;
 };
 
-template<class Edge, class Path, class GetEdgesFunction>
+template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
 class CPathFinder
 {
 private:
@@ -51,18 +57,62 @@ private:
     GetEdgesFunction pf_get_edges;
     CVertice<Path>* pf_destination;
     CVertice<Path>* pf_source;
+    GraphClass* pf_object;
     std::queue<CVertice<Path>* > pf_queue;
     std::vector<CVertice<Path>* > pf_path;
     std::vector<CVertice<Path>* > get_path() const;
 public:
-    CPathFinder(GetEdgesFunction get_edges) : pf_get_edges(get_edges), pf_destination(NULL), pf_source(NULL) {}
-    Path find_path(CVertice<Path>* source, CVertice<Path>* destination);
+    CPathFinder(GetEdgesFunction get_edges, GraphClass* object) : pf_get_edges(get_edges), pf_destination(NULL), pf_source(NULL), pf_object(object) {}
+    Path* find_path(CVertice<Path>* source, CVertice<Path>* destination);
 };
+
+template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
+CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>* init(GetEdgesFunction func, GraphClass* object)
+{
+    CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>* pathFinder = new CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>(func, object);
+    return pathFinder;
+}
 
 template<class Path>
 int CVertice<Path>::get_id() const
 {
     return v_id;
+}
+
+template<class Path>
+EVerticeState CVertice<Path>::get_state() const
+{
+    return v_state;
+}
+
+template<class Path>
+CVertice<Path>* CVertice<Path>::get_sibling() const
+{
+    return v_sibling;
+}
+
+template<class Path>
+Path* CVertice<Path>::get_best_path() const
+{
+    return v_best_path;
+}
+
+template<class Path>
+void CVertice<Path>::set_state(EVerticeState state)
+{
+    v_state = state;
+}
+
+template<class Path>
+void CVertice<Path>::set_best_path(Path* path)
+{
+    v_best_path = path;
+}
+
+template<class Path>
+void CVertice<Path>::set_sibling(CVertice<Path>* sibling)
+{
+    v_sibling = sibling;
 }
 
 template<class Path>
@@ -77,44 +127,44 @@ CVertice<Path>* CAbstractEdge<Path>::get_destination() const
     return ae_destination;
 }
 
-template<class Edge, class Path, class GetEdgesFunction>
-Path CPathFinder<Edge, Path, GetEdgesFunction>::find_path(CVertice<Path>* source, CVertice<Path>* destination)
+template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
+Path* CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>::find_path(CVertice<Path>* source, CVertice<Path>* destination)
 {
     pf_source = source;
     pf_destination = destination;
     pf_queue.push(source);
 
-    while(destination->v_state == BEST || !pf_queue.empty())
+    while(destination->get_state() != BEST || !pf_queue.empty())
     {
         CVertice<Path>* vert = pf_queue.front();
         pf_queue.pop();
-        if(vert->v_state == BEST)
+        if(vert->get_state() == BEST)
             continue;
-        vert->v_state = BEST;
-        for(const Edge& edge : pf_get_edges(vert))
+        vert->set_state(BEST);
+        for(Edge* edge : (pf_object->*pf_get_edges)(vert->get_id()))
         {
-            CVertice<Path>* tmpVert = edge.source;
-            if(tmpVert->v_state == BEST)
+            CVertice<Path>* tmpVert = edge->get_source();
+            if(tmpVert->get_state() == BEST)
                 break;
 
-            Path path = edge.destination->v_best_path.add(edge);
-            if(vert->v_state == NOT_VISITED || path < edge.source->v_best_path)
+            Path path = edge->get_destination()->get_best_path()->add(edge);
+            if(vert->get_state() == NOT_VISITED || path < *(edge->get_source()->get_best_path()))
             {
-                vert->v_state = VISITED;
-                vert->v_best_path = path;
-                vert->v_sibling = edge.destination;
-                pf_queue.push(edge.source);
+                vert->set_state(VISITED);
+                vert->set_best_path(&path);
+                vert->set_sibling(edge->get_destination());
+                pf_queue.push(edge->get_source());
             }
         }
-        if(destination->v_state == NOT_VISITED)
+        if(destination->get_state() == NOT_VISITED)
             throw CExNoPath();
     }
 
-    return destination->v_best_path;
+    return destination->get_best_path();
 }
 
-template<class Edge, class Path, class GetEdgesFunction>
-std::vector<CVertice<Path>* > CPathFinder<Edge, Path, GetEdgesFunction>::get_path() const
+template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
+std::vector<CVertice<Path>* > CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>::get_path() const
 {
     CVertice<Path>* vert = pf_destination;
     while(vert->v_sibling)
