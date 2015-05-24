@@ -1,10 +1,8 @@
 #include <iostream>
-#include "cgraph.hpp"
+#include "gtest/gtest.h"
 
-int main()
+int main(int argc, char** argv)
 {
-    CGraph<int>* graph = new CGraph<int>();
-    graph->init();
-
-    return 0;
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
