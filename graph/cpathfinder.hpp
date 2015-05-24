@@ -12,6 +12,8 @@ enum EVerticeState
 
 class CExNoPath
 {
+public:
+    virtual void print_error() = 0;
 };
 
 template<class Path>
@@ -19,11 +21,12 @@ class CVertice
 {
 private:
     int v_id;
-    Path v_best_path;
+    Path* v_best_path;
     EVerticeState v_state;
     CVertice* v_sibling;
 public:
-    CVertice(const int id) : v_id(id), v_sibling(NULL) {}
+    CVertice(const int id) : v_id(id), v_best_path(NULL), v_state(NOT_VISITED), v_sibling(NULL) {}
+    int get_id() const;
 };
 
 template<class Path>
@@ -36,6 +39,8 @@ private:
 public:
     CAbstractEdge(const int source_id, const int destination_id) :
         ae_source(new CVertice<Path>(source_id)), ae_destination(new CVertice<Path>(destination_id)) {}
+    CVertice<Path>* get_source() const;
+    CVertice<Path>* get_destination() const;
 };
 
 template<class Edge, class Path, class GetEdgesFunction>
@@ -49,26 +54,31 @@ private:
     std::queue<CVertice<Path>* > pf_queue;
     std::vector<CVertice<Path>* > pf_path;
     std::vector<CVertice<Path>* > get_path() const;
-    bool compare_vertices(CVertice<Path>* firstVertice, CVertice<Path>* secondVertice);
 public:
     CPathFinder(GetEdgesFunction get_edges) : pf_get_edges(get_edges), pf_destination(NULL), pf_source(NULL) {}
     Path find_path(CVertice<Path>* source, CVertice<Path>* destination);
 };
 
 template<class Path>
-CVertice::CVertice()
+int CVertice<Path>::get_id() const
 {
-    v_state = NOT_VISITED;
+    return v_id;
+}
+
+template<class Path>
+CVertice<Path>* CAbstractEdge<Path>::get_source() const
+{
+    return ae_source;
+}
+
+template<class Path>
+CVertice<Path>* CAbstractEdge<Path>::get_destination() const
+{
+    return ae_destination;
 }
 
 template<class Edge, class Path, class GetEdgesFunction>
-bool CPathFinder::compare_vertices(CVertice<Path>* firstVertice, CVertice<Path>* secondVertice)
-{
-    return firstVertice->v_best_path < secondVertice->v_best_path;
-}
-
-template<class Edge, class Path, class GetEdgesFunction>
-Path CPathFinder::find_path(CVertice<Path>* source, CVertice<Path>* destination)
+Path CPathFinder<Edge, Path, GetEdgesFunction>::find_path(CVertice<Path>* source, CVertice<Path>* destination)
 {
     pf_source = source;
     pf_destination = destination;
@@ -100,11 +110,11 @@ Path CPathFinder::find_path(CVertice<Path>* source, CVertice<Path>* destination)
             throw CExNoPath();
     }
 
-    return path;
+    return destination->v_best_path;
 }
 
 template<class Edge, class Path, class GetEdgesFunction>
-std::vector<CVertice<Path>* > CPathFinder::get_path() const
+std::vector<CVertice<Path>* > CPathFinder<Edge, Path, GetEdgesFunction>::get_path() const
 {
     CVertice<Path>* vert = pf_destination;
     while(vert->v_sibling)
