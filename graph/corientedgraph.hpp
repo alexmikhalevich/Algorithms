@@ -36,7 +36,7 @@ class COrientedGraph
 private:
     std::vector<std::vector<CEdge*> > g_edges;
 public:
-    COrientedGraph(const int vertice_amount) : g_edges(vertice_amount) {}   //NOTE #1.2: possible solution for bug #1
+    COrientedGraph(const int vertice_amount) : g_edges(vertice_amount) {}
     std::vector<CEdge*> get(const int vertice_id) const;
     void add(CEdge* edge);
 };
@@ -63,6 +63,6 @@ std::vector<CEdge*> COrientedGraph::get(const int vertice_id) const
 
 void COrientedGraph::add(CEdge* edge)
 {
-    g_edges[edge->get_source()->get_id()].push_back(edge); //BUG #1.2: out of range
+    g_edges[edge->get_source_id()].push_back(edge);
 }
 } //OrientedGraph
