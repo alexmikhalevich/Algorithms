@@ -1,6 +1,7 @@
 #include <functional>
 #include "bus.hpp"
 #include "corientedgraph.hpp"
+#include "gas_stations.hpp"
 #include "gtest/gtest.h"
 
 TEST(CPathFinderTest, bus_problem)
@@ -27,4 +28,21 @@ TEST(CPathFinderTest, oriented_graph)
     auto path = pathFinder->find_path(0, 4);
     EXPECT_EQ(path.get_path_length(), 3);
     EXPECT_THROW(pathFinder->find_path(4, 0), CExNoPath);
+}
+
+TEST(CPathFinderTest, gas_problem)
+{
+    GasStations::CGasStations* graph = new GasStations::CGasStations(5);
+    graph->add(0, 1, 3, 6);
+    graph->add(4, 3, 6, 7);
+    graph->add(4, 0, 6, 3);
+    graph->add(2, 3, 1, 7);
+    graph->add(4, 1, 6, 6);
+    graph->add(1, 3, 6, 7);
+    graph->add(1, 2, 6, 1);
+    graph->add(2, 0, 1, 3);
+    auto pathFinder = init<GasStations::CEdge, GasStations::CPath,
+            std::vector<GasStations::CEdge*> (GasStations::CGasStations::*)(const int) const>(&GasStations::CGasStations::get, graph);
+    auto path = pathFinder->find_path(0, 4);
+    EXPECT_EQ(path.get_path_length(), 3);
 }
