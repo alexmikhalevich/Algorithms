@@ -1,12 +1,14 @@
+#include <iostream>
 #include "cpathfinder.hpp"
 
 /*
  *the example of the oriented graph implementation
  */
-
+namespace OrientedGraph
+{
 class CPath;
 class CEdge;
-class CGraph;
+class COrientedGraph;
 
 class CEdge : public CAbstractEdge<CPath>
 {
@@ -26,6 +28,7 @@ public:
     CPath(const size_t length = 0) : p_length(length) {}
     CPath add(CEdge* edge);
     bool operator <(const CPath& path);
+    size_t get_path_length() const;
 };
 
 class COrientedGraph
@@ -33,9 +36,15 @@ class COrientedGraph
 private:
     std::vector<std::vector<CEdge*> > g_edges;
 public:
-    std::vector<std::vector<CEdge*> > get() const;
+    COrientedGraph(const int vertice_amount) : g_edges(vertice_amount) {}   //NOTE #1.2: possible solution for bug #1
+    std::vector<CEdge*> get(const int vertice_id) const;
     void add(CEdge* edge);
 };
+
+size_t CPath::get_path_length() const
+{
+    return p_length;
+}
 
 CPath CPath::add(CEdge* edge)
 {
@@ -47,12 +56,13 @@ bool CPath::operator <(const CPath& path)
     return p_length < path.p_length;
 }
 
-std::vector<std::vector<CEdge*> > COrientedGraph::get() const
+std::vector<CEdge*> COrientedGraph::get(const int vertice_id) const
 {
-    return g_edges;
+    return g_edges.at(vertice_id);
 }
 
 void COrientedGraph::add(CEdge* edge)
 {
-    g_edges[edge->get_source()->get_id()].push_back(edge);
+    g_edges[edge->get_source()->get_id()].push_back(edge); //BUG #1.2: out of range
 }
+} //OrientedGraph
