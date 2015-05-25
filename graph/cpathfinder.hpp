@@ -56,7 +56,6 @@ template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
 class CPathFinder
 {
 private:
-    CPathFinder();
     GetEdgesFunction pf_get_edges;
     int pf_destination_id;
     int pf_source_id;
@@ -131,7 +130,7 @@ int CAbstractEdge<Path>::get_destination_id() const
     return ae_destination_id;
 }
 
-template<class Edge, class Path, class GetEdgesFunction, class GraphClass>
+template<class Edge, class Path, class GetEdgesFunction, class GraphClass>  //BUG #1: path counting fails: always 0.
 Path CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>::find_path(const int source_id, const int destination_id)
 {
     pf_vertices.clear();
@@ -164,8 +163,6 @@ Path CPathFinder<Edge, Path, GetEdgesFunction, GraphClass>::find_path(const int 
             CVertice<Path>* tmpVert = pf_vertices[edge->get_destination_id()];
             if(tmpVert->get_state() == BEST)
                 continue;
-            if(edge->get_source_id() >= pf_vertices.size())
-                pf_vertices.resize(edge->get_source_id() + 1);
 
             Path path = pf_vertices[edge->get_source_id()]->get_best_path().add(edge);
             if(tmpVert->get_state() == NOT_VISITED || path < pf_vertices[edge->get_source_id()]->get_best_path())
