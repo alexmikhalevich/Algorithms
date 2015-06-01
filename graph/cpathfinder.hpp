@@ -7,6 +7,7 @@
 #include <algorithm>
 
 //TODO: destructors
+//TODO: template vertice id
 
 enum EVerticeState
 {
@@ -60,7 +61,7 @@ private:
     int pf_destination_id;
     int pf_source_id;
     GraphClass* pf_object;
-    std::queue<int> pf_queue;
+    std::queue<int> pf_queue;       //BUG #1: priority queue
     std::vector<int> pf_path;
     std::vector<CVertice<Path>* > pf_vertices;
 public:
