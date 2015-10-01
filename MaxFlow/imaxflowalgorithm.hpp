@@ -3,12 +3,16 @@
 
 #include <vector>
 #include "ivertexextension.h"
+#include "iedgeextension.h"
+#include "ccompare.hpp"
 
-template<class CapacityType, class Vertex>
+template<class CapacityType, class CompareFunction, class Vertex, class Edge>
 class IMaxFlowAlgorithm {
 public:
-    virtual CapacityType* getMaxFlowValue()  = 0;
-    virtual std::vector<Vertex>* getMaxFlow() = 0;
+       virtual CapacityType* getMaxFlowCapacity(std::vector<std::vector<Edge*> > edges,
+                                                std::vector<Vertex*> vertices, CompareFunction func)  = 0;
+       virtual std::vector<Vertex>* getMaxFlow(std::vector<std::vector<Edge*> > edges,
+                                               std::vector<Vertex*> vertices, CompareFunction func) = 0;
 };
 
 #endif // IMAXFLOWALGORITHM

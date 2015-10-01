@@ -2,7 +2,8 @@
 #define IVERTEXEXTENSION
 
 class IVertexExtension {
-    virtual ~IVertexExtension() = 0;
+public:
+       virtual ~IVertexExtension() {}
 };
 
 #endif // IVERTEXEXTENSION
