@@ -23,7 +23,6 @@ namespace BusProblem
     class CEdge : public CAbstractEdge<CPath>
     {
     private:
-        CEdge();
         size_t e_departure;
         size_t e_duration;
         size_t e_interval;
@@ -36,7 +35,6 @@ namespace BusProblem
     class CSchedule
     {
     private:
-        CSchedule();
         std::vector<std::vector<CEdge*> > s_edges;
     public:
         CSchedule(const int vertice_amount) : s_edges(vertice_amount) {}
@@ -51,11 +49,10 @@ namespace BusProblem
 
     CPath CPath::add(CEdge* edge)
     {
-        size_t departure = edge->e_departure;
-        while(departure < p_arrival_time)
+        size_t departure = ((p_arrival_time - edge->e_departure) / edge->e_interval) * edge->e_interval;
+        if(((p_arrival_time - departure) % edge->e_interval) != 0)
             departure += edge->e_interval;
-        departure += edge->e_duration;
-        return CPath(departure);
+        return CPath(departure + edge->e_duration);
     }
 
     bool CPath::operator <(const CPath& path)

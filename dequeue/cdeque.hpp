@@ -63,7 +63,7 @@ public:
         CDequeIterator operator -(const int count)
         {
             CDequeIterator result = *this;
-            result.dqiter_index = (result.dqiter_index - count) % result.dqiter_capacity;
+            result.dqiter_index = (result.dqiter_index + result.dqiter_capacity - count) % result.dqiter_capacity;
             return result;
         }
         void operator +=(const int count)
@@ -72,7 +72,7 @@ public:
         }
         void operator -=(const int count)
         {
-            dqiter_index = (dqiter_index - count) % dqiter_capacity;
+            dqiter_index = (dqiter_index + dqiter_capacity - count) % dqiter_capacity;
         }
         T& operator [](const int n)
         {
@@ -96,13 +96,13 @@ public:
         }
         CDequeIterator& operator --()
         {
-            dqiter_index = (dqiter_index - 1) % dqiter_capacity;
+            dqiter_index = (dqiter_index + dqiter_capacity - 1) % dqiter_capacity;
             return *this;
         }
         const CDequeIterator operator --(int)
         {
             CDequeIterator resultIter = *this;
-            resultIter.dqiter_index = (resultIter.dqiter_index - 1) % dqiter_capacity;
+            resultIter.dqiter_index = (resultIter.dqiter_index + resultIter.dqiter_capacity - 1) % dqiter_capacity;
             return resultIter;
         }
         int operator -(const CDequeIterator iter)

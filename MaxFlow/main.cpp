@@ -6,10 +6,11 @@
 
 int main() {
        std::ifstream in("input.dat");
-       CFlowNetwork<int, std::less<int> >* net = new CFlowNetwork<int, std::less<int> >(std::less<int>());
+       CFlowNetwork* net = new CFlowNetwork();
        net->read(in);
-       net->getMaxFlowCapacity(new CPushPreflowAlgorithm<int, std::less<int>,
-                               CFlowNetwork<int, std::less<int> >::NetVertex, CFlowNetwork<int, std::less<int> >::NetEdge>);
+       net->applyAlgorithm(new CPushPreflowAlgorithm<int, std::less<int> >, std::less<int>(), in);
+
+       delete net;
 
        return 0;
 }

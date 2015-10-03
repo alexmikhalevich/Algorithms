@@ -2,17 +2,14 @@
 #define IMAXFLOWALGORITHM
 
 #include <vector>
-#include "ivertexextension.h"
-#include "iedgeextension.h"
+#include "ialgorithm.h"
 #include "ccompare.hpp"
 
-template<class CapacityType, class CompareFunction, class Vertex, class Edge>
-class IMaxFlowAlgorithm {
+template<class CapacityType, class CompareFunction>
+class IMaxFlowAlgorithm : public IAlgorithm<CompareFunction> {
 public:
-       virtual CapacityType* getMaxFlowCapacity(std::vector<std::vector<Edge*> > edges,
-                                                std::vector<Vertex*> vertices, CompareFunction func)  = 0;
-       virtual std::vector<Vertex>* getMaxFlow(std::vector<std::vector<Edge*> > edges,
-                                               std::vector<Vertex*> vertices, CompareFunction func) = 0;
+       virtual CapacityType* getMaxFlowCapacity()  = 0;
+       virtual std::vector<std::size_t>* getMaxFlow() = 0;
 };
 
 #endif // IMAXFLOWALGORITHM

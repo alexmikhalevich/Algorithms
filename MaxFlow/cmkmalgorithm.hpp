@@ -7,33 +7,16 @@
 
 #include "imaxflowalgorithm.hpp"
 
-template<class CapacityType, class CompareFucntion, class Vertex, class Edge>
-class CMKMAlgorithm : public IMaxFlowAlgorithm<CapacityType, CompareFucntion, Vertex, Edge> {
-       class CVertexExtension : public IVertexExtension {
-       public:
-              CVertexExtension();
-
-              ~CVertexExtension() {
-                     if(ve_potential)
-                            delete ve_potential;
-              }
-
-       private:
-              CapacityType* ve_potential;
-       };
-
+template<class CapacityType, class CompareFucntion>
+class CMKMAlgorithm : public IMaxFlowAlgorithm<CapacityType, CompareFucntion> {
 public:
        CMKMAlgorithm() {}
        ~CMKMAlgorithm() {}
 
-       CapacityType* getMaxFlowCapacity(std::vector<std::vector<Edge*> > edges,
-                                        std::vector<Vertex*> vertices, CompareFucntion func) {
-
+       CapacityType* getMaxFlowCapacity() {
        }
 
-       std::vector<Vertex>* getMaxFlow(std::vector<std::vector<Edge*> > edges,
-                                       std::vector<Vertex*> vertices, CompareFucntion func) {
-
+       std::vector<std::size_t>* getMaxFlow() {
        }
 };
 
