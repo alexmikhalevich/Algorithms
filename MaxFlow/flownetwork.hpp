@@ -15,7 +15,7 @@ public:
 
        template<class CompareFunction>
        void applyAlgorithm(IAlgorithm<CompareFunction>* algorithm, CompareFunction func, std::istream& stream) {
-              algorithm->applyAlgorithm(fn_edges, func, stream);
+              algorithm->applyAlgorithm(fn_edges.size(), func, stream);
        }
 
        void read(std::istream& stream) {
