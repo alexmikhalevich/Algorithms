@@ -105,8 +105,8 @@ private:
               std::size_t minimum = std::numeric_limits<std::size_t>::max();
 
               for(std::size_t i = 0; i < ppa_residualVertices.size(); ++i) {
-                     if(ppa_residualForwardEdges[vertexId][i] && (ppa_residualVertices[vertexId]->getHeight() < minimum))
-                            minimum = ppa_residualVertices[vertexId]->getHeight();
+                     if(ppa_residualForwardEdges[vertexId][i] && (ppa_residualVertices[i]->getHeight() < minimum))
+                            minimum = ppa_residualVertices[i]->getHeight();
               }
 
               ppa_residualVertices[vertexId]->setHeight(minimum + 1);
