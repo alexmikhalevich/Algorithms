@@ -1,21 +1,22 @@
 /*
- * The implementation of push-preflow algorithm
+ * The implementation of the relabel-to-front algorithm
  * Assuming vertices.begin - source, vertices.end - sink
  */
 
-#ifndef CPUSHPREFLOWALGORITHM_H
-#define CPUSHPREFLOWALGORITHM_H
+#ifndef CRELABELTOFRONTALGORITHM_H
+#define CRELABELTOFRONTALGORITHM_H
 
 #include <iostream>
 #include <assert.h>
 #include <limits>
 #include <istream>
+#include <list>
 #include "imaxflowalgorithm.hpp"
 #include "cbaseedge.h"
 #include "cbasevertex.h"
 
 template<class CapacityType, class CompareFunction>
-class CPushPreflowAlgorithm : public IMaxFlowAlgorithm<CapacityType, CompareFunction> {
+class CRelabelToFrontAlgorithm : public IMaxFlowAlgorithm<CapacityType, CompareFunction> {
 private:
        class CVertex : public CBaseVertex {
        private:
@@ -43,7 +44,7 @@ private:
               }
 
               CapacityType& getExcessFlow() const {
-                     return &v_excessFlow;
+                     return *v_excessFlow;
               }
 
               void setHeight(const std::size_t height) {
@@ -170,27 +171,45 @@ private:
               ppa_residualVertices[0]->setHeight(ppa_residualVertices.size());
        }
 public:
-       CPushPreflowAlgorithm() {
+       CRelabelToFrontAlgorithm() {
               ppa_comparator = NULL;
        }
 
-       ~CPushPreflowAlgorithm() {
+       ~CRelabelToFrontAlgorithm() {
               if(ppa_comparator)
                      delete ppa_comparator;
        }
 
-       void applyAlgorithm(const std::size_t edges_size, CompareFunction func, std::istream& stream) {                        //TODO: maybe pass just size of edges vector here
+       void applyAlgorithm(const std::size_t edges_size, CompareFunction func, std::istream& stream) {
               ppa_comparator = new CCompare<CapacityType, CompareFunction>(func);
               Init(edges_size, stream);
+
+              std::list<std::size_t> verticesId;
+              std::list<std::size_t>::iterator curVertex;
+              std::size_t oldVertexHeight = 0;
+
+              for(std::size_t i = 1; i < ppa_residualVertices.size() - 2; ++i) {
+                     verticesId.push_front(i);
+              }
+              curVertex = verticesId.begin();
+
+              while(curVertex != verticesId.end()) {
+                     oldVertexHeight= ppa_residualVertices[*curVertex]->getHeight();
+                     Discharge(*curVertex);
+                     if(ppa_residualVertices[*curVertex]->getHeight() != oldVertexHeight) {
+                            verticesId.push_front(*curVertex);
+                            verticesId.erase(curVertex);
+                            curVertex = verticesId.begin();
+                     }
+                     ++curVertex;
+              }
        }
 
        CapacityType* getMaxFlowCapacity() {
-              //TODO
        }
 
        std::vector<std::size_t>* getMaxFlow() {
-              //TODO
        }
 };
 
-#endif // CPUSHPREFLOWALGORITHM_H
+#endif // CRELABELTOFRONTALGORITHM_H
