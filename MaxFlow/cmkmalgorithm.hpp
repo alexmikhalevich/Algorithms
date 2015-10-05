@@ -13,7 +13,7 @@ public:
        CMKMAlgorithm() {}
        ~CMKMAlgorithm() {}
 
-       CapacityType* getMaxFlowCapacity() {
+       CapacityType getMaxFlowCapacity() {
        }
 
        std::vector<std::size_t>* getMaxFlow() {
