@@ -1,5 +1,5 @@
 /*
- * The implementation of push-preflow algorithm
+ * The implementation of the relabel-to-front algorithm
  * Assuming vertices.begin - source, vertices.end - sink
  */
 
@@ -14,6 +14,7 @@
 #include "cbaseedge.h"
 #include "cbasevertex.h"
 
+//TODO refactoring
 template<class CapacityType, class CompareFunction>
 class CPushPreflowAlgorithm : public IMaxFlowAlgorithm<CapacityType, CompareFunction> {
 private:
