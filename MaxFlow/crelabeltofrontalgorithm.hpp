@@ -22,6 +22,7 @@ private:
        private:
               std::size_t v_id;
               std::size_t v_height;
+              std::vector<std::size_t> v_adjacentVertices;
               CapacityType v_excessFlow;
        public:
               CVertex(const std::size_t id) : CBaseVertex () {
@@ -52,6 +53,10 @@ private:
 
               std::size_t getHeight() const {
                      return v_height;
+              }
+
+              void pushAdjacentVertex(const std::size_t vertexId) {
+                     v_adjacentVertices.push_back(vertexId);
               }
        };
 
@@ -128,16 +133,17 @@ private:
               }
        }
 
-       void Init(const std::size_t vertices_size, const std::size_t edges_size, std::istream& stream) {       //TODO: optimize input
-              ppa_residualForwardEdges.resize(vertices_size);
-              ppa_residualBackwardEdges.resize(vertices_size);
-              ppa_residualVertices.resize(vertices_size);
+       //FIXME: optimization for this method is necessary
+       void Init(const std::vector<std::vector<int> >& edges, const std::size_t edges_size, std::istream& stream) {
+              ppa_residualForwardEdges.resize(edges.size());
+              ppa_residualBackwardEdges.resize(edges.size());
+              ppa_residualVertices.resize(edges.size());
 
-              for(std::size_t i = 0; i < vertices_size; ++i) {
-                     ppa_residualForwardEdges[i].resize(vertices_size);
-                     ppa_residualBackwardEdges[i].resize(vertices_size);
+              for(std::size_t i = 0; i < edges.size(); ++i) {
+                     ppa_residualForwardEdges[i].resize(edges.size());
+                     ppa_residualBackwardEdges[i].resize(edges.size());
                      ppa_residualVertices[i] = NULL;
-                     for(std::size_t j = 0; j < vertices_size; ++j) {
+                     for(std::size_t j = 0; j < edges.size(); ++j) {
                             ppa_residualForwardEdges[i][j] = NULL;
                             ppa_residualBackwardEdges[i][j] = NULL;
                      }
@@ -164,6 +170,13 @@ private:
                             ppa_residualVertices[destinationVertex] = new CVertex(destinationVertex);
               }
 
+              for(std::size_t i = 0; i < ppa_residualVertices.size(); ++i) {
+                     for(std::size_t j = 0; j < ppa_residualVertices.size(); ++j) {
+                            if(edges[i][j] != -1)
+                                   ppa_residualVertices[i]->pushAdjacentVertex(j);
+                     }
+              }
+
               for(std::size_t i = 1; i < ppa_residualVertices.size(); ++i) {               //i != 0 - ignoring source
                      if(ppa_residualForwardEdges[0][i] == NULL) continue;
                      ppa_residualVertices[i]->setExcessFlow(ppa_residualForwardEdges[0][i]->getCapacity());
@@ -182,9 +195,9 @@ public:
                      delete ppa_comparator;
        }
 
-       void applyAlgorithm(const std::size_t vertices_size, const std::size_t edges_size, CompareFunction func, std::istream& stream) {
+       void applyAlgorithm(const std::vector<std::vector<int> >& edges, const std::size_t edges_size, CompareFunction func, std::istream& stream) {
               ppa_comparator = new CCompare<CapacityType, CompareFunction>(func);
-              Init(vertices_size, edges_size, stream);
+              Init(edges, edges_size, stream);
 
               std::list<std::size_t> verticesId;
               std::list<std::size_t>::iterator curVertex;

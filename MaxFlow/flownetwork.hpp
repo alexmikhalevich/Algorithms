@@ -16,7 +16,7 @@ public:
 
        template<class CompareFunction>
        void applyAlgorithm(IAlgorithm<CompareFunction>* algorithm, CompareFunction func, std::istream& stream) {
-              algorithm->applyAlgorithm(fn_edges.size(), fn_numOfEdges, func, stream);
+              algorithm->applyAlgorithm(fn_edges, fn_numOfEdges, func, stream);
        }
 
        std::size_t getEdgesArraySize() const {
