@@ -76,7 +76,7 @@ private:
               }
 
               CapacityType getFlow() const {
-                     return &e_flow;
+                     return e_flow;
               }
 
               void setCapacity(const CapacityType& capacity) {
@@ -120,16 +120,17 @@ private:
        void Discharge(const std::size_t vertexId) {
               std::size_t currentVertex = vertexId;
               while(ppa_comparator->less(0, ppa_residualVertices[vertexId]->getExcessFlow())) {
-                     if(ppa_residualForwardEdges[vertexId][vId] && (ppa_residualVertices[vertexId] == ppa_residualVertices[vId] + 1)) { //TODO: split in two conditions
-                            Push(vertexId, vId);
-                            vId = 0;
-                            continue;
-                     }:
-                     ++vId;
-                     if(vId == ppa_residualVertices.size()) { //TODO: should be the first condition
+                     if(currentVertex == ppa_residualVertices.size()) {
                             Relabel(vertexId);
-                            vId = 0;
+                            currentVertex = 0;
                      }
+
+                     if(ppa_comparator->less(0,  ppa_residualForwardEdges[vertexId][currentVertex]->getCapacity() - ppa_residualForwardEdges[vertexId][currentVertex]->getFlow())
+                                   && (ppa_residualVertices[vertexId]->getHeight() == ppa_residualVertices[currentVertex]->getHeight() + 1)) {
+                            Push(vertexId, currentVertex);
+                     }
+                     else
+                            ++currentVertex;
               }
        }
 
