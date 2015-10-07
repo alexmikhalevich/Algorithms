@@ -118,7 +118,7 @@ private:
        }
 
        void Discharge(const std::size_t vertexId) {
-              std::size_t vId = 0;
+              std::size_t currentVertex = vertexId;
               while(ppa_comparator->less(0, ppa_residualVertices[vertexId]->getExcessFlow())) {
                      if(ppa_residualForwardEdges[vertexId][vId] && (ppa_residualVertices[vertexId] == ppa_residualVertices[vId] + 1)) {
                             Push(vertexId, vId);
