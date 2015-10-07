@@ -120,13 +120,13 @@ private:
        void Discharge(const std::size_t vertexId) {
               std::size_t currentVertex = vertexId;
               while(ppa_comparator->less(0, ppa_residualVertices[vertexId]->getExcessFlow())) {
-                     if(ppa_residualForwardEdges[vertexId][vId] && (ppa_residualVertices[vertexId] == ppa_residualVertices[vId] + 1)) {
+                     if(ppa_residualForwardEdges[vertexId][vId] && (ppa_residualVertices[vertexId] == ppa_residualVertices[vId] + 1)) { //TODO: split in two conditions
                             Push(vertexId, vId);
                             vId = 0;
                             continue;
-                     }
+                     }:
                      ++vId;
-                     if(vId == ppa_residualVertices.size()) {
+                     if(vId == ppa_residualVertices.size()) { //TODO: should be the first condition
                             Relabel(vertexId);
                             vId = 0;
                      }
