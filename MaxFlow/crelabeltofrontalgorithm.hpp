@@ -30,10 +30,7 @@ private:
                      v_height = 0;
               }
 
-              ~CVertex() {
-                     if(v_excessFlow)
-                            delete v_excessFlow;
-              }
+              ~CVertex() {}
 
               std::size_t getId() const {
                      return v_id;
@@ -93,7 +90,7 @@ private:
        std::vector<std::vector<CEdge*> > ppa_residualBackwardEdges;
        std::vector<CVertex*> ppa_residualVertices;
 
-       void Push(const std::size_t firstVertexId, const std::size_t secondVertexId) {
+       void Push(const std::size_t firstVertexId, const std::size_t secondVertexId) {      //TODO: check this method
               CapacityType minPossibleFlow = ppa_comparator->less(ppa_residualVertices[firstVertexId]->getExcessFlow(),
                                                                   ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity())
                             ? ppa_residualVertices[firstVertexId]->getExcessFlow()
@@ -106,7 +103,7 @@ private:
               ppa_residualBackwardEdges[secondVertexId][firstVertexId] += minPossibleFlow;
        }
 
-       void Relabel(const std::size_t vertexId) {
+       void Relabel(const std::size_t vertexId) {       //TODO: check this method
               std::size_t minimum = std::numeric_limits<std::size_t>::max();
 
               for(std::size_t i = 0; i < ppa_residualVertices.size(); ++i) {
@@ -125,7 +122,8 @@ private:
                             currentVertex = 0;
                      }
 
-                     if(ppa_comparator->less(0,  ppa_residualForwardEdges[vertexId][currentVertex]->getCapacity() - ppa_residualForwardEdges[vertexId][currentVertex]->getFlow())
+                     if(ppa_residualForwardEdges[vertexId][currentVertex]
+                                   && ppa_comparator->less(0,  ppa_residualForwardEdges[vertexId][currentVertex]->getCapacity() - ppa_residualForwardEdges[vertexId][currentVertex]->getFlow())
                                    && (ppa_residualVertices[vertexId]->getHeight() == ppa_residualVertices[currentVertex]->getHeight() + 1)) {
                             Push(vertexId, currentVertex);
                      }
@@ -191,7 +189,7 @@ public:
               ppa_comparator = NULL;
        }
 
-       ~CRelabelToFrontAlgorithm() {
+       virtual ~CRelabelToFrontAlgorithm() {
               if(ppa_comparator)
                      delete ppa_comparator;
        }
