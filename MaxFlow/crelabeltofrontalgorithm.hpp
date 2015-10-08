@@ -90,17 +90,17 @@ private:
        std::vector<std::vector<CEdge*> > ppa_residualBackwardEdges;
        std::vector<CVertex*> ppa_residualVertices;
 
-       void Push(const std::size_t firstVertexId, const std::size_t secondVertexId) {      //TODO: check this method
+       void Push(const std::size_t firstVertexId, const std::size_t secondVertexId) {
               CapacityType minPossibleFlow = ppa_comparator->less(ppa_residualVertices[firstVertexId]->getExcessFlow(),
-                                                                  ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity())
+                                                                  ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity() - ppa_residualForwardEdges[firstVertexId][secondVertexId]->getFlow())
                             ? ppa_residualVertices[firstVertexId]->getExcessFlow()
-                            : ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity();
+                            : ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity() - ppa_residualForwardEdges[firstVertexId][secondVertexId]->getFlow();
 
               ppa_residualVertices[firstVertexId]->setExcessFlow(ppa_residualVertices[firstVertexId]->getExcessFlow() - minPossibleFlow);
               ppa_residualVertices[secondVertexId]->setExcessFlow(ppa_residualVertices[secondVertexId]->getExcessFlow()  +  minPossibleFlow);
 
-              ppa_residualForwardEdges[firstVertexId][secondVertexId] -= minPossibleFlow;
-              ppa_residualBackwardEdges[secondVertexId][firstVertexId] += minPossibleFlow;
+              ppa_residualForwardEdges[firstVertexId][secondVertexId] += minPossibleFlow;
+              ppa_residualBackwardEdges[secondVertexId][firstVertexId] -= minPossibleFlow;
        }
 
        void Relabel(const std::size_t vertexId) {       //TODO: check this method
@@ -133,6 +133,7 @@ private:
        }
 
        //FIXME: optimization for this method is necessary
+       //TODO: check this method
        void Init(const std::vector<std::vector<int> >& edges, const std::size_t edges_size, std::istream& stream) {
               ppa_residualForwardEdges.resize(edges.size());
               ppa_residualBackwardEdges.resize(edges.size());
