@@ -69,7 +69,7 @@ private:
               }
 
               void setFlow(const CapacityType& flow) {
-                     e_flow = &flow;
+                     e_flow = flow;
               }
 
               CapacityType getFlow() const {
@@ -91,19 +91,19 @@ private:
        std::vector<CVertex*> ppa_residualVertices;
 
        void Push(const std::size_t firstVertexId, const std::size_t secondVertexId) {
-              CapacityType minPossibleFlow = ppa_comparator->less(ppa_residualVertices[firstVertexId]->getExcessFlow(),
+              CapacityType maxPossibleFlow = ppa_comparator->less(ppa_residualVertices[firstVertexId]->getExcessFlow(),
                                                                   ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity() - ppa_residualForwardEdges[firstVertexId][secondVertexId]->getFlow())
                             ? ppa_residualVertices[firstVertexId]->getExcessFlow()
                             : ppa_residualForwardEdges[firstVertexId][secondVertexId]->getCapacity() - ppa_residualForwardEdges[firstVertexId][secondVertexId]->getFlow();
 
-              ppa_residualVertices[firstVertexId]->setExcessFlow(ppa_residualVertices[firstVertexId]->getExcessFlow() - minPossibleFlow);
-              ppa_residualVertices[secondVertexId]->setExcessFlow(ppa_residualVertices[secondVertexId]->getExcessFlow()  +  minPossibleFlow);
+              ppa_residualVertices[firstVertexId]->setExcessFlow(ppa_residualVertices[firstVertexId]->getExcessFlow() - maxPossibleFlow);
+              ppa_residualVertices[secondVertexId]->setExcessFlow(ppa_residualVertices[secondVertexId]->getExcessFlow()  +  maxPossibleFlow);
 
-              ppa_residualForwardEdges[firstVertexId][secondVertexId] += minPossibleFlow;
-              ppa_residualBackwardEdges[secondVertexId][firstVertexId] -= minPossibleFlow;
+              ppa_residualForwardEdges[firstVertexId][secondVertexId] += maxPossibleFlow;
+              ppa_residualBackwardEdges[secondVertexId][firstVertexId] -= maxPossibleFlow;
        }
 
-       void Relabel(const std::size_t vertexId) {       //TODO: check this method
+       void Relabel(const std::size_t vertexId) {
               std::size_t minimum = std::numeric_limits<std::size_t>::max();
 
               for(std::size_t i = 0; i < ppa_residualVertices.size(); ++i) {
@@ -171,17 +171,23 @@ private:
               }
 
               for(std::size_t i = 0; i < ppa_residualVertices.size(); ++i) {
+                     ppa_residualVertices[i]->setHeight(0);
+                     ppa_residualVertices[i]->setExcessFlow(0);         //FIXME: the implicit conversion from int to CapacityType
                      for(std::size_t j = 0; j < ppa_residualVertices.size(); ++j) {
-                            if(edges[i][j] != -1)
+                            if(edges[i][j] != -1) {
                                    ppa_residualVertices[i]->pushAdjacentVertex(j);
+                                   ppa_residualForwardEdges[i][j]->setFlow(0);      //FIXME: the implicit conversion from int to CapacityType
+                                   ppa_residualBackwardEdges[j][i]->setFlow(0);   //FIXME: the implicit conversion from int to CapacityType
+                            }
                      }
               }
 
               for(std::size_t i = 1; i < ppa_residualVertices.size(); ++i) {               //i != 0 - ignoring source
                      if(ppa_residualForwardEdges[0][i] == NULL) continue;
+                     ppa_residualForwardEdges[0][i]->setFlow(ppa_residualForwardEdges[0][i]->getCapacity());
+                     ppa_residualBackwardEdges[i][0]->setFlow(-(ppa_residualForwardEdges[0][i]->getCapacity()));
                      ppa_residualVertices[i]->setExcessFlow(ppa_residualForwardEdges[0][i]->getCapacity());
-                     ppa_residualBackwardEdges[i][0]->setCapacity(ppa_residualForwardEdges[0][i]->getCapacity()
-                                   + ppa_residualBackwardEdges[i][0]->getCapacity());
+                     ppa_residualVertices[0] ->setExcessFlow(ppa_residualVertices[0] ->getExcessFlow() - ppa_residualForwardEdges[0][i]->getCapacity());
               }
               ppa_residualVertices[0]->setHeight(ppa_residualVertices.size());
        }
